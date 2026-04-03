@@ -1,0 +1,25 @@
+/**
+ * @file version.hpp
+ * @brief Auto-generated version header — do not edit by hand.
+ *        Processed from version.hpp.in by CMake configure_file().
+ */
+
+#pragma once
+
+#include <string_view>
+
+namespace at {
+namespace version {
+
+inline constexpr int major_version = @PROJECT_VERSION_MAJOR@;
+inline constexpr int minor_version = @PROJECT_VERSION_MINOR@;
+inline constexpr int patch_version = @PROJECT_VERSION_PATCH@;
+
+/// Full semver string, e.g. "1.1.0"
+inline constexpr std::string_view string = "@PROJECT_VERSION@";
+
+/// Short Git commit hash at configure time, e.g. "a1b2c3d"
+inline constexpr std::string_view git_hash = "@LIBAT_GIT_HASH@";
+
+} // namespace version
+} // namespace at
