@@ -18,8 +18,9 @@ jobs:
       
       - name: Check license headers
         run: |
-          $HOME/go/bin/addlicense -check -c "Yanujz" -l "MIT" \
+          $HOME/go/bin/addlicense -check -c "yanujz" -l "MIT" \
             include/at/*.hpp \
+            include/at/*.in \
             tests/*.cpp \
             examples/*.cpp \
             CMakeLists.txt

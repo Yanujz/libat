@@ -1,0 +1,8 @@
+# addlicense configuration
+# Reference: https://github.com/google/addlicense
+version: "1.0"
+
+# License header settings
+copyright_year: 2026
+copyright_holder: Yanujz
+license_type: MIT

@@ -1,0 +1,40 @@
+name: Auto-License
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  addlicense:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install addlicense
+        run: go install github.com/google/addlicense@latest
+      
+      - name: Add license headers
+        run: |
+          $HOME/go/bin/addlicense -c "yanujz" -l "MIT" \
+            include/at/*.hpp \
+            include/at/*.in \
+            tests/*.cpp \
+            examples/*.cpp \
+            CMakeLists.txt 2>/dev/null || true
+      
+      - name: Commit changes if any
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add -A
+            git commit -m "chore: add license headers"
+            git push
+          fi
