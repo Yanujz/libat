@@ -82,7 +82,7 @@ Every source file (`.hpp`, `.cpp`, `.in`, `CMakeLists.txt`) must include SPDX he
 
 ```cpp
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2025 yanujz
+// SPDX-FileCopyrightText: 2026 Yanujz
 ```
 
 Use the CMake target to add headers automatically, or GitHub Actions will handle it on PR merge:

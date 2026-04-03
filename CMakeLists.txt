@@ -132,7 +132,7 @@ if(NOT TARGET libat_license AND LIBAT_BUILD_TESTS)
     find_program(ADDLICENSE addlicense)
     if(ADDLICENSE)
         add_custom_target(libat_license
-            COMMAND ${ADDLICENSE} -c "yanujz" -l gpl3 -s
+            COMMAND ${ADDLICENSE} -c "Yanujz" -l gpl3 -s
                 ${CMAKE_SOURCE_DIR}/include/at/*.hpp
                 ${CMAKE_SOURCE_DIR}/include/at/*.in
                 ${CMAKE_SOURCE_DIR}/tests/*.cpp
@@ -148,7 +148,7 @@ if(NOT TARGET libat_check)
     find_program(ADDLICENSE addlicense)
     if(ADDLICENSE)
         add_custom_target(libat_check
-            COMMAND ${ADDLICENSE} -check -c "yanujz" -l gpl3 -s
+            COMMAND ${ADDLICENSE} -check -c "Yanujz" -l gpl3 -s
                 ${CMAKE_SOURCE_DIR}/include/at/*.hpp
                 ${CMAKE_SOURCE_DIR}/include/at/*.in
                 ${CMAKE_SOURCE_DIR}/tests/*.cpp

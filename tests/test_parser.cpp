@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2025 yanujz
+// SPDX-FileCopyrightText: 2026 Yanujz
 
 /**
  * @file test_parser.cpp
