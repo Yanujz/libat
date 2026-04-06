@@ -65,15 +65,13 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
   # ---------------------------------------------------------------------------
-  # Clang 18 + libc++ (Clang's native standard library)
+  # Clang 18  (ubuntu-latest default libstdc++ / GCC 13 headers)
   #
-  # We use -stdlib=libc++ because GCC 14's libstdc++ <generator> header
-  # relies on GCC-specific coroutine internals (__coroutine_traits_impl etc.)
-  # that Clang's code generator does not support, causing member lookup
-  # failures throughout the tokenizer class.
-  #
-  # libc++ 18 ships a native std::generator (P2502R2) implementation that
-  # is fully compatible with Clang 18's coroutine ABI.
+  # std::generator (P2502R2) is guarded by __has_include in parser.hpp so
+  # the library compiles on Clang 18 without the <generator> header.
+  # The tokenizer::stream() coroutine method is simply not compiled; all
+  # other C++23 features (std::expected, <format>, std::from_chars …)
+  # are available in GCC 13's libstdc++.
   # ---------------------------------------------------------------------------
   build-clang:
     name: Build & Test (Clang 18)
@@ -84,9 +82,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          # libc++-18-dev ships std::generator natively; libc++abi-18-dev
-          # provides the C++ ABI runtime required when linking with libc++.
-          sudo apt-get install -y clang-18 libc++-18-dev libc++abi-18-dev cmake ninja-build
+          sudo apt-get install -y clang-18 cmake ninja-build
 
       - name: Configure
         run: |
@@ -94,8 +90,6 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-18 \
             -DCMAKE_C_COMPILER=clang-18 \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
-            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi" \
             -G Ninja
 
       - name: Build

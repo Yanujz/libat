@@ -34,7 +34,15 @@
 #include <expected>
 #include <format>
 #include <functional>
-#include <generator>
+// std::generator (P2502R2) requires GCC ≥ 14 (libstdc++) or MSVC ≥ 19.38.
+// Guard with __has_include so the library compiles on Clang 18 / Apple Clang
+// (where <generator> is not yet shipped) without losing the rest of the API.
+#if __has_include(<generator>)
+#  include <generator>
+#  define LIBAT_HAS_GENERATOR 1
+#else
+#  define LIBAT_HAS_GENERATOR 0
+#endif
 #include <memory>
 #include <optional>
 #include <ranges>
@@ -425,7 +433,10 @@ public:
         }
     }
     
-    // C++23 generator for streaming tokens
+    // C++23 generator for streaming tokens.
+    // Only available when std::generator is provided by the standard library
+    // (GCC ≥ 14 / MSVC ≥ 19.38).  Use tokenizer::next() directly on Clang.
+#if LIBAT_HAS_GENERATOR
     [[nodiscard]] static std::generator<token> stream(std::string_view input) {
         tokenizer t(input);
         while (true) {
@@ -436,6 +447,7 @@ public:
             }
         }
     }
+#endif // LIBAT_HAS_GENERATOR
 
 private:
     std::string_view input_;
