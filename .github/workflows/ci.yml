@@ -65,12 +65,15 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
   # ---------------------------------------------------------------------------
-  # Clang 18 + GCC-14 libstdc++ headers
+  # Clang 18 + libc++ (Clang's native standard library)
   #
-  # <generator> (C++23) requires libstdc++-14.  ubuntu-latest ships GCC 13
-  # by default, so we install g++-14 explicitly.  Clang does NOT auto-promote
-  # to the highest installed GCC — we must pass --gcc-install-dir to tell it
-  # exactly which GCC installation to use for its runtime headers and library.
+  # We use -stdlib=libc++ because GCC 14's libstdc++ <generator> header
+  # relies on GCC-specific coroutine internals (__coroutine_traits_impl etc.)
+  # that Clang's code generator does not support, causing member lookup
+  # failures throughout the tokenizer class.
+  #
+  # libc++ 18 ships a native std::generator (P2502R2) implementation that
+  # is fully compatible with Clang 18's coroutine ABI.
   # ---------------------------------------------------------------------------
   build-clang:
     name: Build & Test (Clang 18)
@@ -81,8 +84,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          # g++-14 provides the libstdc++-14 headers that contain <generator>.
-          sudo apt-get install -y clang-18 g++-14 libstdc++-14-dev cmake ninja-build
+          # libc++-18-dev ships std::generator natively; libc++abi-18-dev
+          # provides the C++ ABI runtime required when linking with libc++.
+          sudo apt-get install -y clang-18 libc++-18-dev libc++abi-18-dev cmake ninja-build
 
       - name: Configure
         run: |
@@ -90,7 +94,8 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-18 \
             -DCMAKE_C_COMPILER=clang-18 \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CXX_FLAGS="--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/14" \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi" \
             -G Ninja
 
       - name: Build
