@@ -57,18 +57,14 @@ target_include_directories(libat INTERFACE
 target_compile_features(libat INTERFACE cxx_std_23)
 
 # std::generator (<generator>) requires GCC ≥ 14 or MSVC ≥ 19.38.
-# Apple/LLVM libc++ does not yet ship <generator>; emit a helpful diagnostic.
+# On all Clang builds the include is skipped at compile-time via the
+# !defined(__clang__) guard in parser.hpp; tokenizer::stream() will not
+# be compiled but all other APIs are fully available.
 if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang")
-    include(CheckIncludeFileCXX)
-    set(CMAKE_REQUIRED_FLAGS "-std=c++23")
-    check_include_file_cxx("generator" _LIBAT_HAS_GENERATOR)
-    if(NOT _LIBAT_HAS_GENERATOR)
-        message(WARNING
-            "libat: the <generator> header is not available with ${CMAKE_CXX_COMPILER_ID} "
-            "${CMAKE_CXX_COMPILER_VERSION}. "
-            "Use GCC ≥ 14 (e.g. -DCMAKE_CXX_COMPILER=g++-15) to build this project."
-        )
-    endif()
+    message(STATUS
+        "libat: building with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} — "
+        "tokenizer::stream() (std::generator coroutine) is not available on Clang builds."
+    )
 endif()
 
 # ---------------------------------------------------------------------------

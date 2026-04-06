@@ -65,13 +65,15 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
   # ---------------------------------------------------------------------------
-  # Clang 18  (ubuntu-latest default libstdc++ / GCC 13 headers)
+  # Clang 18  (libc++ 18)
   #
-  # std::generator (P2502R2) is guarded by __has_include in parser.hpp so
-  # the library compiles on Clang 18 without the <generator> header.
-  # The tokenizer::stream() coroutine method is simply not compiled; all
-  # other C++23 features (std::expected, <format>, std::from_chars …)
-  # are available in GCC 13's libstdc++.
+  # libc++ 18 ships std::expected (added LLVM 16) but not std::generator
+  # (added LLVM 20).  The <generator> include is already skipped on all
+  # Clang builds via !defined(__clang__) guard in parser.hpp, so
+  # tokenizer::stream() is simply not compiled — all other C++23 features
+  # (std::expected, <format>, std::from_chars …) work fine.
+  #
+  # clang-18 is pre-installed on ubuntu-24.04; only libc++ packages are added.
   # ---------------------------------------------------------------------------
   build-clang:
     name: Build & Test (Clang 18)
@@ -82,7 +84,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-18 cmake ninja-build
+          sudo apt-get install -y libc++-18-dev libc++abi-18-dev cmake ninja-build
 
       - name: Configure
         run: |
@@ -90,6 +92,8 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-18 \
             -DCMAKE_C_COMPILER=clang-18 \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+            -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi" \
             -G Ninja
 
       - name: Build
