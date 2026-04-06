@@ -27,6 +27,8 @@
 #include <coroutine>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <expected>
 #include <format>
 #include <functional>
@@ -261,13 +263,30 @@ private:
             return int_val;
         }
         
-        // Try float using from_chars (C++17/23, zero-allocation)
-        // Note: std::from_chars for double requires GCC 11+, MSVC 2017 15.7+, or Clang 14+
+        // Try float using from_chars (zero-allocation on libstdc++ and MSVC).
+        // libc++ added from_chars for floating-point types in LLVM 20; fall back
+        // to strtod with a small stack buffer on older libc++ to avoid a link
+        // error while still keeping stack-only allocation.
         double dbl_val{};
+#if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 200000
+        {
+            char buf[64];
+            const auto len = std::min(sv.size(), std::size_t{63});
+            std::memcpy(buf, sv.data(), len);
+            buf[len] = '\0';
+            char* end = nullptr;
+            dbl_val = std::strtod(buf, &end);
+            const auto fptr = sv.data() + (end - buf);
+            if (end != buf && fptr == sv.data() + sv.size()) {
+                return dbl_val;
+            }
+        }
+#else
         auto [fptr, fec] = std::from_chars(sv.data(), sv.data() + sv.size(), dbl_val);
         if (fec == std::errc{} && fptr == sv.data() + sv.size()) {
             return dbl_val;
         }
+#endif
         
         return sv;
     }
