@@ -34,12 +34,23 @@
 #include <expected>
 #include <format>
 #include <functional>
-// std::generator (P2502R2) requires GCC ≥ 14 (libstdc++) or MSVC ≥ 19.38.
-// Guard with __has_include so the library compiles on Clang 18 / Apple Clang
-// (where <generator> is not yet shipped) without losing the rest of the API.
-#if __has_include(<generator>)
-#  include <generator>
-#  define LIBAT_HAS_GENERATOR 1
+// std::generator (P2502R2) is available in GCC ≥ 14 (libstdc++) and
+// MSVC ≥ 19.35.  GCC 14's <generator> header uses GCC-specific coroutine
+// intrinsics; __has_include returns true on Clang when GCC 14 headers are
+// installed but the header cannot actually be compiled with Clang.
+// Skip the include entirely on any Clang build (Apple or vanilla) and rely
+// on the LIBAT_HAS_GENERATOR macro to conditionally compile the stream() API.
+#if !defined(__clang__)
+#  if __has_include(<generator>)
+#    include <generator>
+#    if defined(__cpp_lib_generator) && __cpp_lib_generator >= 202207L
+#      define LIBAT_HAS_GENERATOR 1
+#    else
+#      define LIBAT_HAS_GENERATOR 0
+#    endif
+#  else
+#    define LIBAT_HAS_GENERATOR 0
+#  endif
 #else
 #  define LIBAT_HAS_GENERATOR 0
 #endif
