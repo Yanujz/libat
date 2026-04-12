@@ -365,12 +365,224 @@ enum class response_type : uint8_t {
     final           // Final result code
 };
 
+// ============================================================================
+// CME / CMS Error Code Enumerations  (3GPP TS 27.007 §9.2 / TS 27.005 §3.2.5)
+// ============================================================================
+
+/// Distinguishes between a plain ERROR, a +CME ERROR, and a +CMS ERROR.
+enum class error_kind : uint8_t {
+    none,   ///< Not an error response (or plain "ERROR" without a code)
+    cme,    ///< +CME ERROR: <code>  (general mobile equipment error)
+    cms,    ///< +CMS ERROR: <code>  (SMS-specific error)
+};
+
+/// +CME ERROR codes — 3GPP TS 27.007 clause 9.2
+enum class cme_error : int {
+    phone_failure                  = 0,
+    no_connection                  = 1,
+    link_reserved                  = 2,
+    operation_not_allowed          = 3,
+    operation_not_supported        = 4,
+    ph_sim_pin_required            = 5,
+    ph_fsim_pin_required           = 6,
+    ph_fsim_puk_required           = 7,
+    sim_not_inserted               = 10,
+    sim_pin_required               = 11,
+    sim_puk_required               = 12,
+    sim_failure                    = 13,
+    sim_busy                       = 14,
+    sim_wrong                      = 15,
+    incorrect_password             = 16,
+    sim_pin2_required              = 17,
+    sim_puk2_required              = 18,
+    memory_full                    = 20,
+    invalid_index                  = 21,
+    not_found                      = 22,
+    memory_failure                 = 23,
+    text_string_too_long           = 24,
+    invalid_chars_in_text          = 25,
+    dial_string_too_long           = 26,
+    invalid_chars_in_dial_string   = 27,
+    no_network_service             = 30,
+    network_timeout                = 31,
+    emergency_calls_only           = 32,
+    net_pin_required               = 40,
+    net_puk_required               = 41,
+    net_subset_pin_required        = 42,
+    net_subset_puk_required        = 43,
+    sp_pin_required                = 44,
+    sp_puk_required                = 45,
+    corporate_pin_required         = 46,
+    corporate_puk_required         = 47,
+    unknown                        = 100,
+};
+
+/// +CMS ERROR codes — 3GPP TS 27.005 clause 3.2.5
+enum class cms_error : int {
+    // TP-layer errors (from GSM 04.11 Annex E)
+    unassigned_number              = 1,
+    operator_barring               = 8,
+    call_barred                    = 10,
+    transfer_rejected              = 21,
+    destination_out_of_service     = 27,
+    unidentified_subscriber        = 28,
+    facility_rejected              = 29,
+    unknown_subscriber             = 30,
+    network_out_of_order           = 38,
+    temporary_failure              = 41,
+    congestion                     = 42,
+    resources_unavailable          = 47,
+    facility_not_subscribed        = 50,
+    facility_not_implemented       = 69,
+    invalid_sm_reference           = 81,
+    invalid_message                = 95,
+    invalid_mandatory_info         = 96,
+    message_type_not_implemented   = 97,
+    message_incompatible           = 98,
+    info_element_not_implemented   = 99,
+    protocol_error                 = 111,
+    interworking                   = 127,
+    // ME (Mobile Equipment) errors
+    me_failure                     = 300,
+    sms_service_reserved           = 301,
+    operation_not_allowed          = 302,
+    operation_not_supported        = 303,
+    invalid_pdu_mode               = 304,
+    invalid_text_mode              = 305,
+    sim_not_inserted               = 310,
+    sim_pin_required               = 311,
+    ph_sim_pin_required            = 312,
+    sim_failure                    = 313,
+    sim_busy                       = 314,
+    sim_wrong                      = 315,
+    sim_puk_required               = 316,
+    sim_pin2_required              = 317,
+    sim_puk2_required              = 318,
+    memory_failure                 = 320,
+    invalid_memory_index           = 321,
+    memory_full                    = 322,
+    smsc_address_unknown           = 330,
+    no_network_service             = 331,
+    network_timeout                = 332,
+    no_cnma_ack_expected           = 340,
+    unknown                        = 500,
+};
+
+/// Returns a human-readable description for a CME error code.
+[[nodiscard]] inline std::string_view cme_error_message(cme_error e) noexcept {
+    switch (e) {
+        case cme_error::phone_failure:               return "phone failure";
+        case cme_error::no_connection:               return "no connection to phone";
+        case cme_error::link_reserved:               return "phone-adaptor link reserved";
+        case cme_error::operation_not_allowed:       return "operation not allowed";
+        case cme_error::operation_not_supported:     return "operation not supported";
+        case cme_error::ph_sim_pin_required:         return "PH-SIM PIN required";
+        case cme_error::ph_fsim_pin_required:        return "PH-FSIM PIN required";
+        case cme_error::ph_fsim_puk_required:        return "PH-FSIM PUK required";
+        case cme_error::sim_not_inserted:            return "SIM not inserted";
+        case cme_error::sim_pin_required:            return "SIM PIN required";
+        case cme_error::sim_puk_required:            return "SIM PUK required";
+        case cme_error::sim_failure:                 return "SIM failure";
+        case cme_error::sim_busy:                    return "SIM busy";
+        case cme_error::sim_wrong:                   return "SIM wrong";
+        case cme_error::incorrect_password:          return "incorrect password";
+        case cme_error::sim_pin2_required:           return "SIM PIN2 required";
+        case cme_error::sim_puk2_required:           return "SIM PUK2 required";
+        case cme_error::memory_full:                 return "memory full";
+        case cme_error::invalid_index:               return "invalid index";
+        case cme_error::not_found:                   return "not found";
+        case cme_error::memory_failure:              return "memory failure";
+        case cme_error::text_string_too_long:        return "text string too long";
+        case cme_error::invalid_chars_in_text:       return "invalid characters in text string";
+        case cme_error::dial_string_too_long:        return "dial string too long";
+        case cme_error::invalid_chars_in_dial_string:return "invalid characters in dial string";
+        case cme_error::no_network_service:          return "no network service";
+        case cme_error::network_timeout:             return "network timeout";
+        case cme_error::emergency_calls_only:        return "network not allowed, emergency calls only";
+        case cme_error::net_pin_required:            return "network personalization PIN required";
+        case cme_error::net_puk_required:            return "network personalization PUK required";
+        case cme_error::net_subset_pin_required:     return "network subset personalization PIN required";
+        case cme_error::net_subset_puk_required:     return "network subset personalization PUK required";
+        case cme_error::sp_pin_required:             return "service provider personalization PIN required";
+        case cme_error::sp_puk_required:             return "service provider personalization PUK required";
+        case cme_error::corporate_pin_required:      return "corporate personalization PIN required";
+        case cme_error::corporate_puk_required:      return "corporate personalization PUK required";
+        case cme_error::unknown:                     return "unknown error";
+        default:                                     return "unknown CME error";
+    }
+}
+
+/// Returns a human-readable description for a CMS error code.
+[[nodiscard]] inline std::string_view cms_error_message(cms_error e) noexcept {
+    switch (e) {
+        case cms_error::unassigned_number:           return "unassigned (unallocated) number";
+        case cms_error::operator_barring:            return "operator determined barring";
+        case cms_error::call_barred:                 return "call barred";
+        case cms_error::transfer_rejected:           return "short message transfer rejected";
+        case cms_error::destination_out_of_service:  return "destination out of service";
+        case cms_error::unidentified_subscriber:     return "unidentified subscriber";
+        case cms_error::facility_rejected:           return "facility rejected";
+        case cms_error::unknown_subscriber:          return "unknown subscriber";
+        case cms_error::network_out_of_order:        return "network out of order";
+        case cms_error::temporary_failure:           return "temporary failure";
+        case cms_error::congestion:                  return "congestion";
+        case cms_error::resources_unavailable:       return "resources unavailable";
+        case cms_error::facility_not_subscribed:     return "requested facility not subscribed";
+        case cms_error::facility_not_implemented:    return "requested facility not implemented";
+        case cms_error::invalid_sm_reference:        return "invalid short message transfer reference";
+        case cms_error::invalid_message:             return "invalid message";
+        case cms_error::invalid_mandatory_info:      return "invalid mandatory information";
+        case cms_error::message_type_not_implemented:return "message type not implemented";
+        case cms_error::message_incompatible:        return "message not compatible with protocol state";
+        case cms_error::info_element_not_implemented:return "information element not implemented";
+        case cms_error::protocol_error:              return "protocol error";
+        case cms_error::interworking:                return "interworking";
+        case cms_error::me_failure:                  return "ME failure";
+        case cms_error::sms_service_reserved:        return "SMS service of ME reserved";
+        case cms_error::operation_not_allowed:       return "operation not allowed";
+        case cms_error::operation_not_supported:     return "operation not supported";
+        case cms_error::invalid_pdu_mode:            return "invalid PDU mode parameter";
+        case cms_error::invalid_text_mode:           return "invalid text mode parameter";
+        case cms_error::sim_not_inserted:            return "(U)SIM not inserted";
+        case cms_error::sim_pin_required:            return "(U)SIM PIN required";
+        case cms_error::ph_sim_pin_required:         return "PH-(U)SIM PIN required";
+        case cms_error::sim_failure:                 return "(U)SIM failure";
+        case cms_error::sim_busy:                    return "(U)SIM busy";
+        case cms_error::sim_wrong:                   return "(U)SIM wrong";
+        case cms_error::sim_puk_required:            return "(U)SIM PUK required";
+        case cms_error::sim_pin2_required:           return "(U)SIM PIN2 required";
+        case cms_error::sim_puk2_required:           return "(U)SIM PUK2 required";
+        case cms_error::memory_failure:              return "memory failure";
+        case cms_error::invalid_memory_index:        return "invalid memory index";
+        case cms_error::memory_full:                 return "memory full";
+        case cms_error::smsc_address_unknown:        return "SMSC address unknown";
+        case cms_error::no_network_service:          return "no network service";
+        case cms_error::network_timeout:             return "network timeout";
+        case cms_error::no_cnma_ack_expected:        return "no +CNMA acknowledgement expected";
+        case cms_error::unknown:                     return "unknown error";
+        default:                                     return "unknown CMS error";
+    }
+}
+
 struct response {
     response_type type{response_type::ok};
+    error_kind    error_source{error_kind::none};
     std::string_view raw;
     std::optional<command> associated_cmd;
     std::vector<std::string_view> data_lines;
-    int error_code{0};  // For +CME ERROR, +CMS ERROR
+    int error_code{0};  // Numeric code from +CME ERROR / +CMS ERROR
+
+    /// Returns the error as a cme_error value when error_source == error_kind::cme.
+    [[nodiscard]] std::optional<cme_error> as_cme_error() const noexcept {
+        if (error_source != error_kind::cme) return std::nullopt;
+        return static_cast<cme_error>(error_code);
+    }
+
+    /// Returns the error as a cms_error value when error_source == error_kind::cms.
+    [[nodiscard]] std::optional<cms_error> as_cms_error() const noexcept {
+        if (error_source != error_kind::cms) return std::nullopt;
+        return static_cast<cms_error>(error_code);
+    }
 };
 
 // ============================================================================
